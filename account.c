@@ -1,81 +1,47 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
 #include "account.h"
-int add_account(const char *fn)
-{
+    int check_for_valid_name(const char *name) {
+    // Ensure the name is not empty
+    if (name == NULL || *name == '\0') { 
+        return 0;
+        // Invalid name
+    }
 
-    FILE *bf;
+    // Check each character in the string
+    while (*name != '\0') {
+        if (!isalpha(*name)) { // Check if the character is not a letter
+            return 0; // Invalid name
+        }
+        name++; // Move to the next character
+    }
+
+    return 1; // Valid name
+}
+
+
+Account search_for_account_by_id_me( const char *bfn,long int idToFind)
+{
+    FILE *file = fopen(bfn, "rb");
+    if (file == NULL)
+    {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
     Account a;
 
-    printf("Enter account's id:");
-    scanf("%ld", &(a.id));
-    getchar();
-
-    printf("Enter account holder name:");
-    fgets(a.holderName, 49, stdin);
-
-    printf("Enter account holder email:");
-    fgets(a.holderEmail, 69, stdin);
-    a.balance = 0;
-    a.numberOfOperations = 0;
-
-    bf = fopen(fn, "ab");
-
-    if (bf == NULL)
-    {
-        perror("Problem writing to file");
-        return -1;
-    }
-
-    fwrite(&a, sizeof(Account), 1, bf);
-
-    fclose(bf);
-
-    return 0;
-}
-
-void print_student_data(Account *a)
-{
-    printf("\n-----------------\n");
-    printf("account's id: %ld\n", a->id);
-    printf("account's holder name: %s", a->holderName);
-    printf("account's holder email: %s", a->holderEmail);
-    printf("account's balance: %lf", a->balance);
-    printf("number of operations: %ld\n", a->id);
-    printf("-----------------\n");
-}
-Account *get_students_data(char *fn, int *num)
-{
-    FILE *fp;
-    Account *result;
-    int i;
-
-    if ((fp = fopen(fn, "rb")))
-    {
-        fread(num, sizeof(int), 1, fp);
-        result = (Account *)calloc(*num, sizeof(Account));
-
-        for (i = 0; i < *num; i++)
-        {
-            if (!fread(result + i, sizeof(Account), 1, fp))
-            {
-                perror("Problem reading from file");
-                fclose(fp);
-
-                return NULL;
-            }
+    while (fread(&a, sizeof(Account), 1, file)) {
+        if (a.id == idToFind) {
+            break;
         }
-
-        fclose(fp);
-
-        return result;
     }
 
-    perror("File could not be opened.");
-
-    return NULL;
+    fclose(file);
+    return a;
 }
-Account search_for_account_by_id(char *bfn)
+Account search_for_account_by_id_user(char *bfn)
 {
     FILE *file = fopen(bfn, "rb");
     if (file == NULL)
@@ -94,7 +60,7 @@ Account search_for_account_by_id(char *bfn)
     while (fread(&a, sizeof(Account), 1, file)) {
         if (a.id == idToFind) {
             printf("account found:\n");
-            printf("account ID: %ld\naccount holder's Name: %s\naccount holder's Name: %s\naccount balance :%lf\nnumber of account operations:%d\n", a.id, a.holderName,a.holderEmail,a.balance,a.numberOfOperations);
+            printf("account ID: %ld\naccount holder's Name: %s\naccount holder's Email: %s\naccount balance :%lf\nnumber of account operations:%d\n", a.id, a.holderName,a.holderEmail,a.balance,a.numberOfOperations);
             isFound = 1;
             break;
         }
@@ -107,3 +73,68 @@ Account search_for_account_by_id(char *bfn)
     fclose(file);
     return a;
 }
+int add_account(const char *fn)
+{
+
+    FILE *bf;
+    Account a;
+
+    printf("Enter account's id:");
+    scanf("%ld", &(a.id));
+    getchar();
+    long int idToFind;
+    FILE *file = fopen(fn, "rb");
+    if (file == NULL)
+    {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    idToFind=a.id;
+    Account temp;
+
+    while (fread(&temp, sizeof(Account), 1, file)) {
+        if (temp.id == idToFind) {
+            printf("account is already exsists!\n");
+            return -2;
+        }
+    }
+
+    fclose(file);
+    
+    int valid=1;
+    do{
+    printf("Enter account holder name:");
+    fgets(a.holderName, 49, stdin);
+    const char* name=a.holderName;
+    a.holderName[strcspn(a.holderName, "\n")] = '\0';
+    int x=check_for_valid_name(name);
+    if(!x){
+    printf("name is not valid try again\n");
+    valid=0;
+    }
+    else{
+        valid=1;
+    }
+    }while(!valid);
+    printf("Enter account holder email:");
+    fgets(a.holderEmail, 69, stdin);
+    a.balance = 0;
+    a.numberOfOperations = 0;
+
+    bf = fopen(fn, "ab");
+
+    if (bf == NULL)
+    {
+        perror("Problem writing to file");
+        return -1;
+    }
+
+    fwrite(&a, sizeof(Account), 1, bf);
+
+    fclose(bf);
+
+    printf("account added successfully \n");
+    return 0;
+}
+
+

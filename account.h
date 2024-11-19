@@ -14,4 +14,4 @@ typedef struct{
 }Account;
 
 int add_account(const char *fn);
-Account search_for_account_by_id(char *bfn);
+Account search_for_account_by_id_user(char *bfn);

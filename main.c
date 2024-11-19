@@ -37,7 +37,7 @@ int main(){
     case 4:
         break;
     case 5:
-        search_for_account_by_id(filename);
+        search_for_account_by_id_user(filename);
         break;
     case 6:
         break;
@@ -45,7 +45,7 @@ int main(){
         break;
     
     default:
-    printf("invalid choice");
+    printf("invalid choice\n");
         break;
     }
     }
