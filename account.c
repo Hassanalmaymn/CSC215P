@@ -21,7 +21,29 @@
     return 1; // Valid name
 }
 
+int check_of_valid_email(const char* email){
+      int contain_at_symbol=0;
+      int contain_dot_symbol=0;
+      if (email == NULL || *email == '\0') { 
+        return 0;
+        // Invalid email
+    }
+     while (*email != '\0') {
+        if(*email=='@'){
+            contain_at_symbol=1;
+        }
+        if(*email=='.'){
+            contain_dot_symbol=1;
+        }
+        email++;
 
+     }
+
+
+     return contain_at_symbol&&contain_dot_symbol;
+
+
+}
 Account search_for_account_by_id_me( const char *bfn,long int idToFind)
 {
     FILE *file = fopen(bfn, "rb");
@@ -116,8 +138,20 @@ int add_account(const char *fn)
         valid=1;
     }
     }while(!valid);
+    int emailIsValid=1;
+    do{
     printf("Enter account holder email:");
     fgets(a.holderEmail, 69, stdin);
+    const char* email= a.holderEmail;
+    int x=check_of_valid_email(email);
+    if(!x){
+        printf("email is not valid\n");
+        emailIsValid=0;
+    }
+    else{
+        emailIsValid=1;
+    }
+    }while(!emailIsValid);
     a.balance = 0;
     a.numberOfOperations = 0;
 
