@@ -12,7 +12,10 @@
 
     // Check each character in the string
     while (*name != '\0') {
-        if (!isalpha(*name)) { // Check if the character is not a letter
+        if (!isalpha(*name)) {
+            if(*name==' '){
+                break;
+            } // Check if the character is not a letter
             return 0; // Invalid name
         }
         name++; // Move to the next character
@@ -30,14 +33,23 @@ int check_of_valid_email(const char* email){
     }
      while (*email != '\0') {
         if(*email=='@'){
-            contain_at_symbol=1;
+            contain_at_symbol+=1;
         }
         if(*email=='.'){
-            contain_dot_symbol=1;
+            contain_dot_symbol+=1;
         }
         email++;
 
      }
+     if (contain_at_symbol>1)
+     {
+        contain_at_symbol=0;
+     }
+      if (contain_dot_symbol>1)
+     {
+        contain_dot_symbol=0;
+     }
+     
 
 
      return contain_at_symbol&&contain_dot_symbol;
@@ -72,7 +84,7 @@ Account search_for_account_by_id_user(char *bfn)
         exit(EXIT_FAILURE);
     }
     long int idToFind;
-    printf("enter account id to searc for it :");
+    printf("enter account id to search for it :");
     scanf("%ld", &idToFind);
 
 
@@ -89,7 +101,7 @@ Account search_for_account_by_id_user(char *bfn)
     }
 
     if (!isFound) {
-        printf("Student with ID %ld not found.\n", idToFind);
+        printf("account with ID %ld not found.\n", idToFind);
     }
 
     fclose(file);
@@ -101,7 +113,7 @@ int add_account(const char *fn)
     FILE *bf;
     Account a;
 
-    printf("Enter account's id:");
+    printf("Enter account id:");
     scanf("%ld", &(a.id));
     getchar();
     long int idToFind;
@@ -131,7 +143,7 @@ int add_account(const char *fn)
     a.holderName[strcspn(a.holderName, "\n")] = '\0';
     int x=check_for_valid_name(name);
     if(!x){
-    printf("name is not valid try again\n");
+    printf("name is not valid try again please the valid name should be alphabeteical with space other charecters not allowed\n");
     valid=0;
     }
     else{
@@ -164,7 +176,7 @@ int add_account(const char *fn)
     }
 
     fwrite(&a, sizeof(Account), 1, bf);
-
+    fflush(bf);
     fclose(bf);
 
     printf("account added successfully \n");
