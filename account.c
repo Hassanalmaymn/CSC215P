@@ -119,12 +119,17 @@ Account search_for_account_by_id_user(char *bfn)
 int delete_holder_accounts(const char *fn)
 {
     char holderName[50];
-    printf("Enter account holder name to delete all their accounts: ");
-    fgets(holderName, sizeof(holderName), stdin);
-    getchar();
-    holderName[strcspn(holderName, "\n")] = '\0'; // Remove trailing newline
+    int c; // To clear input buffer
 
-    // Validate the holder name (must be alphabetical)
+    printf("Enter account holder name to delete all their accounts: ");
+
+    // Clear the input buffer to avoid issues with fgets
+    while ((c = getchar()) != '\n' && c != EOF)
+        ;
+
+    fgets(holderName, sizeof(holderName), stdin);
+    holderName[strcspn(holderName, "\n")] = '\0';
+
     int valid = check_for_valid_name(holderName);
     if (!valid)
     {
@@ -166,7 +171,6 @@ int delete_holder_accounts(const char *fn)
     fclose(file);
     fclose(tempFile);
 
-    // Replace the original file with the temporary file
     if (remove(fn) != 0 || rename("temp.bin", fn) != 0)
     {
         perror("Error updating file");
