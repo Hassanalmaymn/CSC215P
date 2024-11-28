@@ -70,7 +70,7 @@ Account search_for_account_by_id_me(const char *bfn, long int idToFind)
         exit(EXIT_FAILURE);
     }
     Account a;
-
+    rewind(file);
     while (fread(&a, sizeof(Account), 1, file))
     {
         if (a.id == idToFind)
@@ -96,7 +96,7 @@ Account search_for_account_by_id_user(char *bfn)
 
     Account a;
     int isFound = 0;
-
+    rewind(file);
     while (fread(&a, sizeof(Account), 1, file))
     {
         if (a.id == idToFind)
@@ -115,6 +115,209 @@ Account search_for_account_by_id_user(char *bfn)
 
     fclose(file);
     return a;
+}
+void add_operation(const char *filename)
+{
+    FILE *file = fopen(filename, "rb+");
+    if (!file)
+    {
+        perror("Error opening file");
+        return;
+    }
+
+    long int idToFind;
+    printf("Enter the account number for the operation: ");
+    scanf("%ld", &idToFind);
+
+    Account account;
+    int found = 0;
+    long int position = 0;
+
+    // Search for the account
+    while (fread(&account, sizeof(Account), 1, file))
+    {
+        if (account.id == idToFind)
+        {
+            found = 1;
+            break;
+        }
+        position++;
+    }
+
+    if (!found)
+    {
+        printf("Account with ID %ld not found.\n", idToFind);
+        fclose(file);
+        return;
+    }
+
+    // Get operation type and amount
+    char operationType;
+    double amount;
+    printf("Enter the operation type (d for deposit, w for withdraw): ");
+    getchar(); // Consume newline from previous input
+    scanf("%c", &operationType);
+
+    printf("Enter the amount: ");
+    scanf("%lf", &amount);
+
+    // Validate the amount
+    if (amount <= 0)
+    {
+        printf("Invalid amount. Must be positive.\n");
+        fclose(file);
+        return;
+    }
+
+    // Perform the operation
+    if (operationType == 'd')
+    {
+        account.balance += amount;
+    }
+    else if (operationType == 'w')
+    {
+        if (account.balance < amount)
+        {
+            printf("Insufficient balance for withdrawal.\n");
+            fclose(file);
+            return;
+        }
+        account.balance -= amount;
+    }
+    else
+    {
+        printf("Invalid operation type. Use 'd' for deposit or 'w' for withdraw.\n");
+        fclose(file);
+        return;
+    }
+
+    // Add the operation to the operations array
+    if (account.numberOfOperations < 150)
+    {
+        account.operations[account.numberOfOperations].operationSymbol = operationType;
+        account.operations[account.numberOfOperations].amount = amount;
+        account.numberOfOperations++;
+    }
+    else
+    {
+        printf("Operation limit reached for this account.\n");
+        fclose(file);
+        return;
+    }
+
+    // Write back the updated account
+    fseek(file, position * sizeof(Account), SEEK_SET);
+    fwrite(&account, sizeof(Account), 1, file);
+
+    printf("Operation completed successfully.\n");
+
+    fclose(file);
+}
+
+// Function to update an account
+void update_account(const char *filename)
+{
+    FILE *file = fopen(filename, "rb+");
+    if (!file)
+    {
+        perror("Error opening file");
+        return;
+    }
+
+    long int idToUpdate;
+    printf("Enter the account number to update: ");
+    scanf("%ld", &idToUpdate);
+
+    Account account;
+    int found = 0;
+    long int position = 0;
+
+    // Search for the account
+    while (fread(&account, sizeof(Account), 1, file))
+    {
+        if (account.id == idToUpdate)
+        {
+            found = 1;
+            break;
+        }
+        position++;
+    }
+
+    if (!found)
+    {
+        printf("Account with ID %ld not found.\n", idToUpdate);
+        fclose(file);
+        return;
+    }
+
+    // Options for updates
+    int choice;
+    printf("What would you like to update?\n");
+    printf("1. Account Number\n");
+    printf("2. Holder Name\n");
+    printf("Enter your choice: ");
+    scanf("%d", &choice);
+
+    // Update account number
+    if (choice == 1)
+    {
+        long int newId;
+        int isUnique = 0;
+
+        do
+        {
+            printf("Enter the new account number: ");
+            scanf("%ld", &newId);
+
+            // Check if the new ID is unique
+            rewind(file); // Go back to the beginning of the file
+            Account temp;
+            isUnique = 1;
+
+            while (fread(&temp, sizeof(Account), 1, file))
+            {
+                if (temp.id == newId)
+                {
+                    printf("This account number already exists. Try again.\n");
+                    isUnique = 0;
+                    break;
+                }
+            }
+        } while (!isUnique);
+
+        account.id = newId;
+    }
+
+    // Update holder name
+    else if (choice == 2)
+    {
+        char newName[50];
+        int valid;
+
+        do
+        {
+            printf("Enter the new holder name: ");
+            getchar(); // To consume newline from previous input
+            fgets(newName, sizeof(newName), stdin);
+            newName[strcspn(newName, "\n")] = '\0'; // Remove newline character
+
+            valid = check_for_valid_name(newName);
+            if (!valid)
+            {
+                printf("Invalid name. The name must contain only alphabetic characters and spaces. Try again.\n");
+            }
+        } while (!valid);
+
+        strcpy(account.holderName, newName);
+    }
+
+    // Write back the updated account
+    fseek(file, position * sizeof(Account), SEEK_SET);
+    fwrite(&account, sizeof(Account), 1, file);
+
+    printf("Account updated successfully.\n");
+
+    fclose(file);
 }
 int delete_holder_accounts(const char *fn)
 {

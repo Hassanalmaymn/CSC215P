@@ -18,3 +18,5 @@ Account search_for_account_by_id_user(char *bfn);
 void display_all_accounts(const char *fn);
 int delete_account(const char *fn);
 int delete_holder_accounts(const char *fn);
+void update_account(const char *filename);
+void add_operation(const char *filename);

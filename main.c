@@ -32,6 +32,7 @@ int main()
             add_account(filename);
             break;
         case 2:
+        update_account(filename);
             break;
         case 3:
             delete_account(filename);
@@ -46,6 +47,7 @@ int main()
             display_all_accounts(filename);
             break;
         case 7:
+        add_operation(filename);
             break;
 
         default:
