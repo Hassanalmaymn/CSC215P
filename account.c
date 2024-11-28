@@ -162,6 +162,7 @@ void add_operation(const char *filename)
     scanf("%lf", &amount);
 
     // Validate the amount
+    // check_for_valid_amount
     if (amount <= 0)
     {
         printf("Invalid amount. Must be positive.\n");
